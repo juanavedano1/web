@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Repuestos JN - Gestión de Inventario</title>
+    <style>
+        /* Estilos para el cuerpo (fondo y centrado general) */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            /* Elimina el margen predeterminado del body */
+            padding: 0;
+            /* Elimina el padding predeterminado del body */
+            background-color: #007bff;
+            /* Fondo azul */
+            display: flex;
+            /* Usa Flexbox para centrar el contenido */
+            justify-content: center;
+            /* Centra horizontalmente */
+            align-items: center;
+            /* Centra verticalmente */
+            min-height: 100vh;
+            /* Asegura que ocupe al menos el alto completo de la ventana */
+            position: relative;
+            /* Necesario para posicionar el pseudo-elemento de fondo */
+            overflow-y: auto;
+            /* Permite scroll si el contenido es muy largo */
+            padding: 20px;
+            /* Añade un padding general para que el contenido no toque los bordes */
+            box-sizing: border-box;
+            /* Incluye padding en el tamaño total */
+        }
+
+        /* Pseudo-elemento para el texto de fondo "REPUESTOS JN" */
+        body::before {
+            content: "REPUESTOS JN";
+            /* El texto a mostrar */
+            position: absolute;
+            /* Posicionamiento absoluto */
+            top: 50%;
+            /* Centra verticalmente */
+            left: 50%;
+            /* Centra horizontalmente */
+            transform: translate(-50%, -50%);
+            /* Ajusta la posición para el centrado perfecto */
+            font-size: 8em;
+            /* Tamaño grande del texto (ajusta si es necesario) */
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.1);
+            /* Color blanco con baja opacidad (marca de agua) */
+            z-index: 0;
+            /* Asegura que esté detrás del contenido */
+            white-space: nowrap;
+            /* Evita que el texto se rompa en varias líneas */
+            pointer-events: none;
+            /* Evita que el texto de fondo interfiera con clics */
+            user-select: none;
+            /* Evita que el texto de fondo sea seleccionable */
+        }
+
+
+        /* Contenedores principales (login y inventario) */
+        #loginContainer,
+        #inventoryContainer {
+            max-width: 700px;
+            /* Ancho máximo del contenedor */
+            width: 100%;
+            /* Ocupa el 100% del espacio disponible hasta el max-width */
+            background: #fff;
+            /* Fondo blanco para el contenedor "flotante" */
+            padding: 20px;
+            border-radius: 8px;
+            /* Bordes redondeados */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            /* Sombra para efecto "flotante" */
+            text-align: center;
+            /* Centra el contenido interno (títulos, etc.) */
+            position: relative;
+            /* Necesario para asegurar que esté sobre el fondo */
+            z-index: 1;
+            /* Asegura que esté sobre el pseudo-elemento de fondo */
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            /* Espacio debajo del título principal */
+        }
+
+        h3 {
+            text-align: left;
+            /* Alinea los subtítulos a la izquierda dentro del contenedor */
+            color: #555;
+            margin-top: 20px;
+            /* Espacio arriba de los subtítulos */
+            margin-bottom: 10px;
+            /* Espacio debajo de los subtítulos */
+        }
+
+        #loginContainer {
+            display: block;
+            /* Por defecto visible */
+        }
+
+        #inventoryContainer {
+            display: none;
+            /* Por defecto oculto */
+        }
+
+        /* Estilos específicos para el formulario de login */
+        #loginContainer input[type="password"] {
+            width: calc(100% - 24px);
+            /* Ancho ajustado por padding y borde */
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            /* Incluye padding y borde en el ancho */
+            display: block;
+            /* Cada elemento en su propia línea */
+            margin-left: auto;
+            margin-right: auto;
+            /* Centra el input */
+        }
+
+        #loginContainer button {
+            width: calc(100% - 0px);
+            /* Ajusta el ancho del botón de login */
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            /* Transición suave al pasar el ratón */
+            display: block;
+            /* Botón en su propia línea */
+            margin-left: auto;
+            margin-right: auto;
+            /* Centra el botón */
+            max-width: 200px;
+            /* Ancho máximo para el botón de login si se desea */
+        }
+
+        #loginContainer button:hover {
+            background-color: #0056b3;
+        }
+
+
+        /* Estilos para el formulario de agregar repuestos */
+        #addPartForm {
+            display: flex;
+            flex-wrap: wrap;
+            /* Permite que los elementos salten de línea */
+            gap: 10px;
+            /* Espacio entre elementos del formulario */
+            margin-top: 20px;
+            margin-bottom: 20px;
+            justify-content: center;
+            /* Centra los elementos del formulario si hay espacio */
+            text-align: left;
+            /* Restablece la alineación a la izquierda para las etiquetas implicitas/placeholders */
+        }
+
+        #addPartForm input[type="text"],
+        #addPartForm input[type="number"] {
+            flex: 1 1 200px;
+            /* Permite que los inputs crezcan/encojan, con un tamaño base de 200px */
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #addPartForm button {
+            flex: 1 1 auto;
+            /* El botón se ajusta automáticamente */
+            padding: 8px 12px;
+            border: none;
+            background-color: #28a745;
+            /* Color verde para agregar */
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #addPartForm button:hover {
+            background-color: #218838;
+        }
+
+        /* Estilos para la tabla de inventario */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            /* Aumentado padding para mejor legibilidad */
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        /* Estilos para los botones dentro de la tabla */
+        td button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        td button:hover {
+            opacity: 0.9;
+            /* Ligera opacidad al pasar el ratón */
+        }
+
+        td button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        td button.sell-button {
+            /* Botón Vender (usaremos esta clase) */
+            background-color: #ffc107;
+            /* Color amarillo/naranja */
+            color: #212529;
+        }
+
+        td button.sell-button:hover:not(:disabled) {
+            background-color: #e0a800;
+        }
+
+        td button.delete-button {
+            /* Botón Eliminar (usaremos esta clase) */
+            background-color: #dc3545;
+            /* Color rojo */
+            color: #fff;
+        }
+
+        td button.delete-button:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+
+        /* Estilo para el mensaje de "No hay productos" */
+        #inventoryContainer p {
+            text-align: center;
+            color: #777;
+            font-style: italic;
+        }
+
+
+        /* Estilo básico para el enlace de cerrar sesión */
+        .logout-link {
+            display: block;
+            /* Asegura que esté en su propia línea */
+            text-align: right;
+            /* Alinea a la derecha dentro del contenedor */
+            margin-bottom: 10px;
+            /* Espacio debajo */
+            color: #007bff;
+            /* Color de enlace estándar */
+            text-decoration: none;
+            /* Sin subrayado */
+            font-size: 0.9em;
+            transition: color 0.3s ease;
+        }
+
+        .logout-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loginContainer">
+        <h2>Repuestos JN - Login</h2>
+        <input type="password" id="password" placeholder="Contraseña" />
+        <button onclick="login()">Ingresar</button>
+    </div>
+
+    <div id="inventoryContainer">
+        <a href="#" onclick="logout()" class="logout-link">Cerrar Sesión</a>
+        <h2>Gestión de Repuestos</h2>
+
+        <h3>Agregar Repuesto</h3>
+        <form id="addPartForm" onsubmit="addPart(event)">
+            <input type="text" id="nombreRepuesto" placeholder="Nombre del Repuesto" required />
+            <input type="number" id="stockRepuesto" placeholder="Cantidad en Stock" min="0" value="1" required />
+
+            <input type="number" id="precioRepuesto" placeholder="Precio" min="0" step="0.01" value="0.00" required />
+
+            <button type="submit">Agregar</button>
+        </form>
+
+        <h3>Inventario Actual</h3>
+        <table id="partsTable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Stock</th>
+                    <th>Precio</th>
+                    <th>Vender</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody id="partsTableBody"></tbody>
+        </table>
+
+
+        <p id="noPartsMessage" style="display: none;">No hay repuestos en el inventario.</p>
+
+    </div>
+
+    <script>
+        // Contraseña HARDCODEADA (¡solo para este ejemplo simple y local!)
+        const ADMIN_PASSWORD = 'lola2025'; // Puedes cambiarla aquí
+
+        // Cargar datos desde localStorage o iniciar array vacío
+        let repuestos = JSON.parse(localStorage.getItem('repuestos')) || [];
+
+        // Elementos DOM
+        const loginContainer = document.getElementById('loginContainer');
+        const inventoryContainer = document.getElementById('inventoryContainer');
+        const passwordInput = document.getElementById('password');
+        const partsTableBody = document.getElementById('partsTableBody');
+        const addPartForm = document.getElementById('addPartForm');
+        const noPartsMessage = document.getElementById('noPartsMessage'); // Mensaje de no hay partes
+
+        // Función de login
+        function login() {
+            const pass = passwordInput.value;
+            if (pass === ADMIN_PASSWORD) {
+                // Simular login exitoso - mostrar inventario
+                loginContainer.style.display = 'none';
+                inventoryContainer.style.display = 'block';
+                passwordInput.value = ''; // Limpia el campo de contraseña
+                mostrarRepuestos(); // Carga y muestra los repuestos
+            } else {
+                alert('Contraseña incorrecta.');
+                passwordInput.value = ''; // Limpia el campo al fallar
+                passwordInput.focus(); // Vuelve el foco al campo de contraseña
+            }
+        }
+
+        // Función de logout
+        function logout() {
+            // Simular logout - volver a la pantalla de login
+            inventoryContainer.style.display = 'none';
+            loginContainer.style.display = 'block';
+            passwordInput.focus(); // Pone el foco en el campo de contraseña
+            // Opcional: Limpiar repuestos del estado si quisieras un logout "completo"
+            // pero usualmente en un login local solo ocultas la interfaz.
+        }
+
+
+        // Mostrar lista de repuestos en la tabla
+        function mostrarRepuestos() {
+            partsTableBody.innerHTML = ''; // Limpia el cuerpo de la tabla
+
+            if (repuestos.length === 0) {
+                // Mostrar mensaje si no hay repuestos
+                noPartsMessage.style.display = 'block';
+                partsTableBody.style.display = 'none'; // Ocultar el tbody si está vacío
+            } else {
+                // Ocultar mensaje y mostrar tbody
+                noPartsMessage.style.display = 'none';
+                partsTableBody.style.display = 'table-row-group'; // Mostrar el tbody
+
+                repuestos.forEach((repuesto, index) => {
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${repuesto.nombre}</td>
+                        <td>${repuesto.stock}</td>
+                        <td>$${repuesto.precio.toFixed(2)}</td>
+                        <td>
+                            <button class="sell-button" onclick="venderRepuesto(${index})" ${repuesto.stock <= 0 ? 'disabled' : ''}>
+                                Vender
+                            </button>
+                        </td>
+                        <td>
+                             <button class="delete-button" onclick="eliminarRepuesto(${index})">
+                                Eliminar
+                            </button>
+                        </td>
+                    `;
+                    partsTableBody.appendChild(fila);
+                });
+            }
+        }
+
+        // Guardar en localStorage cada vez que se modifica
+        function guardarRepuestos() {
+            localStorage.setItem('repuestos', JSON.stringify(repuestos));
+        }
+
+        // Agregar un nuevo repuesto
+        function addPart(e) {
+            e.preventDefault(); // Previene el envío del formulario tradicional
+
+            const nombreInput = document.getElementById('nombreRepuesto');
+            const stockInput = document.getElementById('stockRepuesto');
+            const precioInput = document.getElementById('precioRepuesto');
+
+            const nombre = nombreInput.value.trim();
+            const stock = parseInt(stockInput.value);
+            const precio = parseFloat(precioInput.value);
+
+            // Validar que el nombre no esté vacío después del trim
+            if (!nombre) {
+                alert('El nombre del repuesto no puede estar vacío.');
+                nombreInput.focus();
+                return;
+            }
+
+            // Validar si el repuesto ya existe (puedes ajustar esta lógica)
+            const existingPartIndex = repuestos.findIndex(r => r.nombre.toLowerCase() === nombre.toLowerCase());
+            if (existingPartIndex > -1) {
+                // Si ya existe, preguntar si quiere sumar stock o reemplazar
+                if (confirm(`"${nombre}" ya existe. ¿Desea sumar el stock (${stock}) al existente (${repuestos[existingPartIndex].stock})? \n\n Presione Cancelar para reemplazar la cantidad y el precio.`)) {
+                    repuestos[existingPartIndex].stock += stock;
+                    // El precio y el nombre se mantienen del existente
+                } else {
+                    // Reemplazar stock y precio
+                    repuestos[existingPartIndex].stock = stock;
+                    repuestos[existingPartIndex].precio = precio;
+                }
+
+            } else {
+                // Si no existe, añadirlo como nuevo
+                repuestos.push({ nombre, stock, precio });
+            }
+
+
+            guardarRepuestos(); // Guarda los cambios
+            mostrarRepuestos(); // Actualiza la tabla
+            addPartForm.reset(); // Limpia el formulario
+            nombreInput.focus(); // Pone el foco en el primer campo del formulario
+        }
+
+        // Vender un repuesto (disminuir stock en 1)
+        function venderRepuesto(index) {
+            if (repuestos[index].stock > 0) {
+                repuestos[index].stock -= 1;
+                guardarRepuestos(); // Guarda los cambios
+                mostrarRepuestos(); // Actualiza la tabla
+            } else {
+                // Este alert podría no ser necesario si el botón se deshabilita
+                // alert('No hay más stock de este repuesto.');
+                mostrarRepuestos(); // Asegura que el botón se deshabilite si stock es 0
+            }
+        }
+
+        // Eliminar un repuesto
+        function eliminarRepuesto(index) {
+            if (confirm(`¿Está seguro de eliminar el repuesto "${repuestos[index].nombre}"?`)) {
+                repuestos.splice(index, 1); // Elimina el elemento del array
+                guardarRepuestos(); // Guarda los cambios
+                mostrarRepuestos(); // Actualiza la tabla
+            }
+        }
+
+        // Cargar los datos y mostrar la interfaz de login al cargar la página
+        window.onload = () => {
+            // Al cargar, siempre mostramos el login primero
+            loginContainer.style.display = 'block';
+            inventoryContainer.style.display = 'none';
+            passwordInput.focus(); // Pone el foco en el campo de contraseña al cargar
+            // Los repuestos se cargarán y mostrarán SOLO después del login exitoso
+        }
+
+        // Permitir login presionando Enter en el campo de contraseña
+        passwordInput.addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevenir el comportamiento por defecto del Enter en formularios
+                login(); // Llamar a la función de login
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>
